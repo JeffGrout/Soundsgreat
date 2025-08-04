@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soundsgreat</title>
+  <style>
+    body {
+      background: #1a1a1a;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .player {
+      background: #292929;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      width: 300px;
+      text-align: center;
+    }
+
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .progress-container {
+      background: #444;
+      border-radius: 10px;
+      cursor: pointer;
+      height: 8px;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .progress {
+      background: #00cc66;
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+    }
+
+    .time {
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .play-btn {
+      background: #00cc66;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .play-btn:hover {
+      background: #00b359;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="player">
+    <h2>Soundsgreat</h2>
+    <audio id="audio" src="placeholder.mp3"></audio>
+
+    <div class="progress-container" id="progress-container">
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="time">
+      <span id="current-time">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="play-btn" id="play">Play</button>
+    </div>
+  </div>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('play');
+    const progress = document.getElementById('progress');
+    const progressContainer = document.getElementById('progress-container');
+    const currentTimeEl = document.getElementById('current-time');
+    const durationEl = document.getElementById('duration');
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+        playBtn.textContent = 'Pause';
+      } else {
+        audio.pause();
+        playBtn.textContent = 'Play';
+      }
+    });
+
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = formatTime(audio.duration);
+    });
+
+    progressContainer.addEventListener('click', (e) => {
+      const width = progressContainer.clientWidth;
+      const clickX = e.offsetX;
+      const duration = audio.duration;
+      audio.currentTime = (clickX / width) * duration;
+    });
+
+    function updateProgress() {
+      const { currentTime, duration } = audio;
+      const progressPercent = (currentTime / duration) * 100;
+      progress.style.width = `${progressPercent}%`;
+      currentTimeEl.textContent = formatTime(currentTime);
+      if (!isNaN(duration)) {
+        durationEl.textContent = formatTime(duration);
+      }
+    }
+
+    function formatTime(time) {
+      const minutes = Math.floor(time / 60);
+      const seconds = Math.floor(time % 60);
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+  </script>
+
+</body>
+</html>
