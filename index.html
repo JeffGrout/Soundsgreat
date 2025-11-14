@@ -1,279 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vintage Cassette Player</title>
-    <style>
-        body {
-            background-color: #1a2f3c;
-            color: #77b4c5;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 20px;
-            padding: 20px;
-        }
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Oscillator</title>
 
-        .player-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #2d4263;
-            border-radius: 10px;
-            padding: 20px;
-            border: 2px solid #77b4c5;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-        }
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="174x174"
+			href="./favicon.png"
+		/>
 
-        .upload-section {
-            margin: 20px 0;
-            text-align: center;
-            background-color: #3a506c;
-            padding: 15px;
-            border-radius: 5px;
-            border: 2px solid #77b4c5;
-        }
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/2.4.3/webcomponents-bundle.js"></script>
+		<link
+			href="https://fonts.googleapis.com/css?family=Material+Icons&display=block"
+			rel="stylesheet"
+		/>
+		<script src="../build/Tone.js"></script>
+		<script src="./js/tone-ui.js"></script>
+		<script src="./js/components.js"></script>
+		<style type="text/css">
+			tone-play-toggle {
+				margin-bottom: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<tone-example label="Oscillator">
+			<div slot="explanation">
+				The oscillator has 4 basic types which can be altered by setting
+				the number of partials and partials array.
+				<br /><br />
+				<a
+					href="https://tonejs.github.io/docs/latest/classes/Oscillator"
+					>Tone.Oscillator</a
+				>
+				docs.
+			</div>
 
-        input[type="file"] {
-            color: #77b4c5;
-            margin: 10px 0;
-            background-color: #4a7f67;
-            border: none;
-            padding: 8px;
-            border-radius: 5px;
-        }
+			<div id="content">
+				<tone-momentary-button></tone-momentary-button>
+			</div>
+		</tone-example>
 
-        .track-list {
-            list-style-type: none;
-            padding: 0;
-        }
+		<script type="text/javascript">
+			const osc = new Tone.Oscillator({
+				type: "square",
+				frequency: 440,
+				volume: -16,
+			}).toDestination();
 
-        .track-item {
-            margin: 15px 0;
-            background-color: #3a506c;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #77b4c5;
-        }
+			ui({
+				tone: osc,
+				parent: document.querySelector("#content"),
+			});
 
-        .visualizer {
-            margin-top: 20px;
-            padding: 20px;
-            border: 2px solid #77b4c5;
-            border-radius: 5px;
-            background-color: #4a7f67;
-        }
-
-        canvas {
-            display: block;
-            margin: 10px auto;
-            background-color: #1a2f3c;
-        }
-
-        .controls {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .cassette-tape {
-            width: 200px;
-            height: 300px;
-            background-color: #4a7f67;
-            margin: 50px auto;
-            border-radius: 5px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tape-record {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 25%;
-            left: 2%;
-            background-color: #77b4c5;
-            border-radius: 10px;
-            animation: tapeSpin 1.5s infinite linear;
-        }
-
-        @keyframes tapeSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .volume-sliders {
-            margin-top: 20px;
-        }
-
-        .track-info {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            color: #77b4c5;
-        }
-    </style>
-</head>
-<body>
-    <div class="player-container">
-        <h1>🎧 Vintage Cassette Player 🎧</h1>
-        
-        <div class="upload-section">
-            <input type="file" id="trackInput" multiple accept="audio/*">
-            <p class="track-info">Drag and drop your audio files here, or click to select files</p>
-        </div>
-
-        <div class="track-list">
-            <li class="track-item">
-                <div class="track-info">Track 01: Full Track</div>
-                <canvas id="track1"></canvas>
-                <div class="volume-sliders">
-                    <input type="range" id="v1" min="0" max="1" step="0.1" value="0">
-                    <span>Master Volume: 0%</span>
-                </div>
-            </li>
-
-            <!-- Add more track items for individual stems -->
-            <li class="track-item">
-                <div class="track-info">Track 02: Drum Stems</div>
-                <canvas id="drums"></canvas>
-                <div class="volume-sliders">
-                    <input type="range" id="d1" min="0" max="1" step="0.1" value="0">
-                    <span>Drum Volume: 0%</span>
-                </div>
-            </li>
-
-            <!-- Repeat for other stems -->
-            <!-- ... Add more track items for Bass, Guitar, etc. ... -->
-
-        </div>
-
-        <div class="controls">
-            <button id="playBtn">Start Play</button>
-            <p class="track-info">Currently Playing: None</p>
-        </div>
-    </div>
-
-    <script>
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Track visualization
-        function createVisualizer() {
-            const canvas = document.getElementById('track1');
-            const ctx = canvas.getContext('2d');
-            const width = 300;
-            const height = 100;
-            
-            canvas.width = width;
-            canvas.height = height;
-            
-            const visualizerNode = audioContext.createVisualizer();
-            visualizerNode.waveform = 'sine';
-            visualizerNode.frequencyBias = 0.1;
-            visualizerNode.volume = 0.1;
-            
-            // Draw the visualization
-            function draw() {
-                ctx.clearRect(0, 0, width, height);
-                const x = (i % width) * 2.5;
-                const y = Math.sin((audioContext.currentTime * frequency * 2 + x) * height * 2);
-                
-                // Draw wave
-                ctx.beginPath();
-                ctx.moveTo(x, height/2 + y);
-                ctx.lineTo(x + width/5, height/2 + y);
-                ctx.strokeStyle = '#77b4c5';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-
-            // Update visualization
-            function update() {
-                draw();
-                requestAnimationFrame(update);
-            }
-            
-            // Connect to audio context
-            visualizerNode.connect(audioContext.destination);
-            update();
-        }
-
-        // File upload handler
-        document.getElementById('trackInput').addEventListener('change', (e) => {
-            const files = e.target.files;
-            handleFiles(files);
-        });
-
-        // Audio handling function
-        function handleFiles(files) {
-            Object.keys(files).forEach(file => {
-                const file = files[file];
-                const reader = new FileReader();
-                
-                reader.onload = (event) => {
-                    const track = audioContext.createBufferSource();
-                    
-                    track.buffer = await createAudioBuffer(event.target.result);
-                    
-                    // Add track to DOM
-                    const trackItem = document.querySelector(`.track-item:not(.removed)`).cloneNode(true);
-                    trackItem.removeAttribute('id');
-                    trackItem.style.display = 'none';
-                    document.querySelector('.track-list').appendChild(trackItem);
-
-                    // Create visualizer for each track
-                    createVisualizer();
-                    
-                    // Add volume control
-                    const volSlider = trackItem.querySelector('input[type="range"]');
-                    volSlider.addEventListener('input', (e) => {
-                        track.gainNode = audioContext.createGain();
-                        track.gainNode.gain.value = e.target.value;
-                        track.connect(audioContext.destination);
-                    });
-                };
-            });
-        }
-
-        // Create audio buffer from file
-        async function createAudioBuffer(url) {
-            const response = await fetch(url);
-            const arrayBuffer = await response.arrayBuffer();
-            return await audioContext.decodeAudioData(arrayBuffer);
-        }
-
-        // Play/Pause control
-        document.getElementById('playBtn').addEventListener('click', () => {
-            if (currentTrack) {
-                currentTrack.start(0);
-            } else {
-                audioContext.suspend();
-            }
-            
-            const playingText = document.querySelector('.track-info');
-            playingText.textContent = `Currently Playing: ${currentTrack ? currentTrack.name : 'None'}`;
-        });
-
-        // Track management
-        let currentTrack = null;
-        
-        // Add play/pause functionality to track visualizers
-        document.querySelectorAll('canvas').forEach(canvas => {
-            const ctx = canvas.getContext('2d');
-            let animationId;
-            
-            function animate() {
-                if (!currentTrack) return;
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height/2);
-                ctx.lineTo(canvas.width, canvas.height/2);
-                ctx.strokeStyle = '#77b4c5';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                
-                animationId = requestAnimationFrame(animate);
-            }
-            
-            animate();
-        });
-    </script>
-</body>
+			// bind the interface
+			document
+				.querySelector("tone-momentary-button")
+				.addEventListener("down", () => osc.start());
+			document
+				.querySelector("tone-momentary-button")
+				.addEventListener("up", () => osc.stop());
+		</script>
+	</body>
 </html>
